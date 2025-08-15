@@ -13,8 +13,7 @@ public class User {
     @Column(nullable = false)
     private String phoneNo;
 
-    @Column(nullable = false,unique = true)
-    private String studentId;
+
 
     @Column(nullable = false,unique = true)
     private String email;
@@ -25,13 +24,7 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    public String getStudentId() {
-        return studentId;
-    }
 
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
-    }
 
     public String getName() {
         return name;
