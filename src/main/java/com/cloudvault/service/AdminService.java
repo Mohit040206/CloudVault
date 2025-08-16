@@ -6,6 +6,7 @@ import com.cloudvault.repository.AdminRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Optional;
@@ -16,13 +17,16 @@ public class AdminService {
     @Autowired
     private AdminRepository adminRepository;
 
+    @Autowired
+    private BCryptPasswordEncoder encoder;
+
     @Bean
     public String loginAdmin(@RequestParam String email,
                              @RequestParam String password,
                              HttpSession session) {
         Optional<Admin> admin = adminRepository.findByEmail(email);
 
-        if (admin.isPresent() && admin.get().getPassword().equals(password)) {
+        if (admin.isPresent() && encoder.matches(password, admin.get().getPassword())) {
 
                 // Save session data
                 session.setAttribute("email", admin.get().getEmail());
