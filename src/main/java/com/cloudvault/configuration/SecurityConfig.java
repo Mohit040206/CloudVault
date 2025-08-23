@@ -19,7 +19,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/register","/user/login", "/done.html", "/login.html", "/register.html").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form.disable()); // 🚀 disable default Spring login page
+                .formLogin(form -> form.disable()); //  disable default Spring login page
 
         return http.build();
     }
