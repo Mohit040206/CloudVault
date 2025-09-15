@@ -18,7 +18,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // ✅ Registration endpoint
+    //  Registration endpoint
     @PostMapping("/register")
     public String userRegistration(@RequestParam String name,
                                    @RequestParam String email,
@@ -30,15 +30,15 @@ public class UserController {
         user.setEmail(email);
         user.setPassword(password);
         user.setPhoneNo(phoneNo);
-        System.out.println(">>> Registering user: " + user);
+
         // save user in DB
         userService.registerUser(user);
 
-        // ✅ after successful register → go to done.html
-        return "redirect:/done.html";
+        // after successful register → go to done.html
+        return "redirect:/login.html";
     }
 
-    // ✅ Custom login endpoint
+    // Custom login endpoint
     @PostMapping("/login")
     public String userLogin(@RequestParam String email,
                             @RequestParam String password,
@@ -47,4 +47,17 @@ public class UserController {
         // delegate login check to service
         return userService.loginUser(email, password, session);
     }
+    // In UserController
+    @PostMapping("/change-password")
+    public String changePassword(@RequestParam String oldPassword,
+                                 @RequestParam String newPassword,
+                                 HttpSession session) {
+        String email = (String) session.getAttribute("email");
+        if (email == null) {
+            return "redirect:/login";
+        }
+        boolean success = userService.changePassword(email, oldPassword, newPassword);
+        return success ? "redirect:/done" : "redirect:/login?error=password";
+    }
+
 }
