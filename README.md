@@ -46,7 +46,7 @@ The project emphasizes:
 ## 🚀 How to Run
 1. Clone the repository:
 
-git clone https://github.com/YourUsername/cloudvault.git
+git clone https://github.com/Mohit040206/CloudVault
 Open the project in your IDE (IntelliJ/Eclipse)
 
 Configure MySQL database in application.properties
