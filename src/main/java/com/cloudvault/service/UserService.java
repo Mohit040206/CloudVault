@@ -31,8 +31,9 @@ public class UserService {
         if (user.isPresent() && encoder.matches(password, user.get().getPassword())) {
             session.setAttribute("email", user.get().getEmail());
             session.setAttribute("role", "USER");
+            session.setAttribute("name",user.get().getName());
 
-            return "redirect:/done";
+            return "redirect:/user/home";
         } else {
             return "redirect:/login?error=true";
         }

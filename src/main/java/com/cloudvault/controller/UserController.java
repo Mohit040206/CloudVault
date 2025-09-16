@@ -7,6 +7,8 @@ import com.cloudvault.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,7 +37,7 @@ public class UserController {
         userService.registerUser(user);
 
         // after successful register → go to done.html
-        return "redirect:/login.html";
+        return "redirect:/login";
     }
 
     // Custom login endpoint
@@ -59,5 +61,22 @@ public class UserController {
         boolean success = userService.changePassword(email, oldPassword, newPassword);
         return success ? "redirect:/done" : "redirect:/login?error=password";
     }
+        @GetMapping("/home")
+       public String userHome(HttpSession session, Model model){
+        String email=(String) session.getAttribute("email");
+        if(email==null){
+            return "redirect:/login";
+        }
 
+        String name=(String) session.getAttribute("name");
+        String firstname=name!=null?name.split(" ")[0]:"";
+
+        model.addAttribute("firstname",firstname);
+        return "userhome";
+        }
+        @GetMapping("logout")
+    public String logout(HttpSession session){
+        session.invalidate();
+            return "redirect:/login?logout=true";
+        }
 }
