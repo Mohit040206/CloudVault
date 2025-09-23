@@ -16,7 +16,9 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/register","/user/login","/user/home","/userhome","/index","/register","/user/login","/login","/images/**").permitAll()
+                        .requestMatchers("/user/register","/upload.html","/upload","/document/mydocs",
+                                "mydocs.html","/document/upload","/user/login","/user/home","/index","/register",
+                                "/user/login","/login","/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable()); //  disable default Spring login page

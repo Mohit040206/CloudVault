@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Documents - CloudVault</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: url('/images/logovault.png') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #2d89ef;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        nav a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        main {
+            flex: 1; /* take remaining space */
+            padding: 40px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .file-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 15px;
+            width: 180px; /* compact width */
+            min-height: 140px; /* compact height */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .file-card h3 {
+            margin: 5px 0;
+            font-size: 14px;
+            word-break: break-word;
+        }
+
+        .file-card p {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .file-card button {
+            margin-top: 10px;
+            padding: 6px 12px;
+            font-size: 13px;
+            background: #2d89ef;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .file-card button:hover {
+            background: #1b5cb8;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            background: #2d89ef;
+            color: white;
+            margin-top: auto; /* push footer to bottom */
+        }
+
+        /* Responsive adjustment */
+        @media (max-width: 600px) {
+            .file-card {
+                width: 140px;
+                min-height: 120px;
+            }
+
+            .file-card h3 {
+                font-size: 12px;
+            }
+
+            .file-card p {
+                font-size: 11px;
+            }
+
+            .file-card button {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>CloudVault</h1>
+    <nav>
+        <a href="/user/home">Home</a>
+        <a href="/upload">Upload File</a>
+        <a href="/user/logout">Logout</a>
+    </nav>
+</header>
+<main>
+    <div th:if="${documents.isEmpty()}">
+        <p>No documents found.</p>
+    </div>
+
+    <div th:each="doc : ${documents}" class="file-card">
+        <h3 th:text="${doc.fileName}">File Name</h3>
+        <p th:text="${doc.fileType}">Type</p>
+        <form th:action="@{'/document/download/' + ${doc.id}}" method="get">
+            <button type="submit">Download</button>
+        </form>
+    </div>
+</main>
+<footer>
+    <p>&copy; 2025 CloudVault. All rights reserved.</p>
+</footer>
+</body>
+</html>

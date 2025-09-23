@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>CloudVault - User Home</title>
+    <title>Upload File - CloudVault</title>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -14,7 +14,6 @@
             background: url('/images/logovault.png') no-repeat center center fixed;
             background-size: cover;
         }
-
         header {
             background: #2d89ef;
             color: white;
@@ -24,11 +23,7 @@
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
-        header h1 {
-            margin: 0;
-        }
-
+        header h1 { margin: 0; }
         nav a {
             color: white;
             margin-left: 20px;
@@ -36,11 +31,7 @@
             font-weight: 600;
             transition: color 0.3s;
         }
-
-        nav a:hover {
-            color: #ffe082;
-        }
-
+        nav a:hover { color: #ffe082; }
         main {
             flex: 1;
             display: flex;
@@ -48,44 +39,46 @@
             align-items: center;
             padding: 40px 20px;
         }
-
-        .dashboard {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(6px);
+        .upload-box {
+            background: rgba(255, 255, 255, 0.85);
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
-            width: 500px;
+            width: 400px;
             text-align: center;
         }
-
-        h2 {
-            margin-bottom: 20px;
-            color: #333;
+        .message {
+            margin-top: 15px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 6px;
         }
-
-        .actions {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
         }
-
-        .actions a {
-            display: block;
-            padding: 15px;
+        .error {
+            color: #721c24;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        input[type="file"] {
+            margin: 15px 0;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
             background: #2d89ef;
             color: white;
-            border-radius: 8px;
-            text-decoration: none;
             font-weight: bold;
+            cursor: pointer;
             transition: background 0.3s;
         }
-
-        .actions a:hover {
+        button:hover {
             background: #1b5cb8;
         }
-
         footer {
             text-align: center;
             padding: 15px;
@@ -100,22 +93,30 @@
     <h1>CloudVault</h1>
     <nav>
         <a href="/user/home">Home</a>
-        <a href="/logout">Logout</a>
+        <a href="/document/mydocs">My Documents</a>
+        <a href="/user/logout">Logout</a>
     </nav>
 </header>
-
 <main>
-    <div class="dashboard">
-        <h2>Welcome, <span th:text="${firstname}"></span> 👋</h2>
-        <div class="actions">
-            <a href="/upload">📤 Upload File</a>
-            <a href="/document/mydocs">📂 View Files</a>
-            <a href="/share">🔗 Share File</a>
-            <a href="/user/change-password">🔑 Change Password</a>
+    <div class="upload-box">
+        <h2>📤 Upload a File</h2>
+        <form action="/document/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <br>
+            <button type="submit">Upload</button>
+        </form>
+
+        <!-- success message -->
+        <div th:if="${param.success}" class="message success">
+            ✅ File uploaded successfully!
+        </div>
+
+        <!-- error message -->
+        <div th:if="${param.error}" class="message error">
+            ❌ Something went wrong, please try again.
         </div>
     </div>
 </main>
-
 <footer>
     <p>&copy; 2025 CloudVault. All rights reserved.</p>
 </footer>

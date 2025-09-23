@@ -29,6 +29,7 @@ public class DocumentController {
 
 
     // ========== Upload ==========
+
     @PostMapping("/upload")
     public String uploadDocument(@RequestParam("file") MultipartFile file,
                                  HttpSession session) {
@@ -43,8 +44,9 @@ public class DocumentController {
         }
 
         documentService.uploadFile(file, userOpt.get());
-        return "redirect:/done.html"; // after success
+        return "redirect:/upload" + "?success=true"; // after success, reload same page with message
     }
+
 
     // ========== View All Documents of Logged-in User ==========
     @GetMapping("/mydocs")
@@ -61,7 +63,7 @@ public class DocumentController {
 
         List<Document> docs = documentService.getDocumentsByUser(userOpt.get());
         model.addAttribute("documents", docs);
-        return "mydocs"; // return mydocs.html with list
+        return "mydocs.html"; // return mydocs.html with list
     }
 
     // ========== Download ==========
