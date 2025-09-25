@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>About - CloudVault</title>
+  <style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f4f6f9;
+        color: #333;
+    }
+
+    header {
+        background: #2d89ef;
+        color: white;
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+        margin: 0;
+    }
+
+    nav a {
+        color: white;
+        margin-left: 20px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s;
+    }
+
+    nav a:hover {
+        color: #ffe082;
+    }
+
+    main {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+    }
+
+    section {
+        margin-bottom: 40px;
+    }
+
+    h2 {
+        color: #2d89ef;
+        margin-bottom: 15px;
+    }
+
+    h3 {
+        color: #2d89ef;
+        margin-bottom: 10px;
+    }
+
+    p {
+        line-height: 1.6;
+    }
+
+    ul {
+        margin-left: 20px;
+    }
+
+    .section.contact a {
+        color: #2d89ef;
+        text-decoration: none;
+    }
+
+    .section.contact a:hover {
+        text-decoration: underline;
+    }
+
+    footer {
+        text-align: center;
+        padding: 15px;
+        background: #2d89ef;
+        color: white;
+        margin-top: 40px;
+    }
+
+
+  </style>
+</head>
+<body>
+<header>
+  <h1>CloudVault</h1>
+  <nav xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <a href="/user/home">Home</a>
+
+  </nav>
+
+</header>
+
+<main>
+  <section>
+    <h2>About CloudVault</h2>
+    <p>
+      CloudVault is a secure and user-friendly platform designed to simplify
+      the way you store, manage, and access your important documents.
+      Built with modern technologies, it ensures both convenience and data safety.
+    </p>
+  </section>
+
+  <section>
+    <h2>Tech Stack</h2>
+    <p>
+      CloudVault is powered by:
+    <ul>
+      <li><strong>Backend:</strong> Java 21, Spring Boot, Spring Security</li>
+      <li><strong>Database:</strong> MySQL</li>
+      <li><strong>Frontend:</strong> HTML5, CSS3 (Thymeleaf templates)</li>
+    </ul>
+    </p>
+  </section>
+
+  <section>
+    <h2>The Idea Behind CloudVault</h2>
+    <p>
+      The inspiration for CloudVault came during our very first year of college.
+      Four of us – <strong>me, Amit, Priyanshu, and Sumaskant</strong> – dreamed of creating a place
+      where we could store and relive our golden college memories together.
+      Not just documents, but also <strong>photos and videos of our college life</strong>,
+      safely stored in one platform.
+    </p>
+    <p>
+      Our vision was simple yet powerful: instead of public shareable links,
+      access would be controlled through <strong>IDs and passwords</strong>.
+      That way, only the people who truly shared those memories could upload,
+      view, and download them — making it feel more personal, more private,
+      and more connected.
+    </p>
+    <p>
+      What began as a casual discussion among friends has now taken shape
+      as <strong>CloudVault</strong> — a project built with Java and Spring Boot,
+      starting with document storage but with the future goal of expanding
+      to images and videos that can be <strong>viewed and played directly inside the platform</strong>.
+    </p>
+  </section>
+
+  <section>
+    <h2>Future & Scope</h2>
+    <p>
+      While currently focused on secure document management, CloudVault aims to expand
+      into supporting media files such as photos and videos. The long-term vision
+      is to create a personal digital memory space where users can preserve and
+      relive their journeys with friends, family, and colleagues.
+    </p>
+  </section>
+
+  <section>
+    <h2>About the Developer</h2>
+    <p>
+      CloudVault is developed by <strong>Mohit Gupta</strong>, a passionate developer
+      with an aim to build real-world impactful projects. This project represents
+      not just technical growth but also the fulfillment of a long-held dream
+      shared with close college friends.
+    </p>
+  </section>
+
+  <!-- Contact Section Added -->
+  <div class="section contact">
+    <h3>Contact</h3>
+    <p><strong>Email:</strong> mohitkumarpath@email.com</p>
+    <p><strong>GitHub:</strong> <a href="https://github.com/Mohit040206" target="_blank">github.com/Mohit040206</a></p>
+    <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/mohit-kumar-das-816416258/" target="_blank">linkedin.com/in/mohitkumardas</a></p>
+  </div>
+</main>
+
+<footer>
+  <p>&copy; 2025 CloudVault. All rights reserved.</p>
+</footer>
+</body>
+</html>

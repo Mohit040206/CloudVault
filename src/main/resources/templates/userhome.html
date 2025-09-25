@@ -50,7 +50,7 @@
         }
 
         .dashboard {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(6px);
             padding: 30px;
             border-radius: 12px;
@@ -79,11 +79,12 @@
             border-radius: 8px;
             text-decoration: none;
             font-weight: bold;
-            transition: background 0.3s;
+            transition: background 0.3s, transform 0.2s;
         }
 
         .actions a:hover {
             background: #1b5cb8;
+            transform: translateY(-3px);
         }
 
         footer {
@@ -100,6 +101,7 @@
     <h1>CloudVault</h1>
     <nav>
         <a href="/user/home">Home</a>
+        <a href="/about">About</a>
         <a href="/logout">Logout</a>
     </nav>
 </header>
@@ -110,7 +112,6 @@
         <div class="actions">
             <a href="/upload">📤 Upload File</a>
             <a href="/document/mydocs">📂 View Files</a>
-            <a href="/share">🔗 Share File</a>
             <a href="/user/change-password">🔑 Change Password</a>
         </div>
     </div>
