@@ -36,5 +36,14 @@ public class HomeController{
         }
         return "upload"; // shows the form page
     }
+    @GetMapping("/forgotPassword")
+    public String showForgotPasswordPage() {
+        return "forgot_email";  // templates/forgot_password.html
+    }
+//    @GetMapping("/forgot-password/reset-page")
+//    public String resetPasswordPage() {
+//        return "reset_password"; // templates/reset_password.html
+//    }
+
 
 }

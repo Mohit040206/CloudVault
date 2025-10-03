@@ -24,7 +24,11 @@ public class ForgotPasswordService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    MailService mailService;
+
     public String generateOtp(String email){
+
         Optional<User> userOpt=userRepository.findByEmail(email);
         if(userOpt.isEmpty()){
             throw new RuntimeException("User Not Found with this Email: " + email);
@@ -38,7 +42,8 @@ public class ForgotPasswordService {
         token.setExpiryTime(LocalDateTime.now().plusMinutes(10)); // valid for 10 mins
         tokenRepository.save(token);
 
-//        TODO Integrate email service here to send otp to the users
+        mailService.sendOtpEmail(email,otp);
+
 
         return otp;
     }
