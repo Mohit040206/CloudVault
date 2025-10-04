@@ -20,12 +20,21 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    public void validatePassword(String password) {
+        String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\[\\]{};':\"\\\\|,.<>/?]).{6,}$";
+        if(!password.matches(regex)){
+            throw new RuntimeException("Password must be at least 6 characters and include a lowercase, uppercase, number, and special character!");
+        }
+    }
+
+
     //  Registration endpoint
     @PostMapping("/register")
     public String userRegistration(@RequestParam String name,
                                    @RequestParam String email,
                                    @RequestParam String password,
                                    @RequestParam String phoneNo) {
+        validatePassword(password);
 
         User user = new User();
         user.setName(name);
@@ -53,15 +62,33 @@ public class UserController {
     @PostMapping("/change-password")
     public String changePassword(@RequestParam String oldPassword,
                                  @RequestParam String newPassword,
-                                 HttpSession session) {
+                                 @RequestParam String confirmPassword,
+                                 HttpSession session,
+                                 Model model) {
         String email = (String) session.getAttribute("email");
         if (email == null) {
             return "redirect:/login";
         }
+
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("error", "Passwords do not match!");
+            return "change_password";
+        }
+
+        // Validate new password
+        validatePassword(newPassword);
+
         boolean success = userService.changePassword(email, oldPassword, newPassword);
-        return success ? "redirect:/done" : "redirect:/login?error=password";
+        if (success) {
+            model.addAttribute("message", "Password changed successfully!");
+            return "userhome";
+        } else {
+            model.addAttribute("error", "Old password is incorrect!");
+            return "change_password";
+        }
     }
-        @GetMapping("/home")
+
+    @GetMapping("/home")
        public String userHome(HttpSession session, Model model){
         String email=(String) session.getAttribute("email");
         if(email==null){

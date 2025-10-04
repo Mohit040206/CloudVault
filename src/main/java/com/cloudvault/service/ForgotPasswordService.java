@@ -51,7 +51,7 @@ public class ForgotPasswordService {
     public boolean resetPassword(String email, String otp, String newPassword){
         Optional<User> userOpt=userRepository.findByEmail(email);
         if(userOpt.isEmpty()){
-            throw new RuntimeException("User Not FounD With this Email: "+ email);
+            throw new RuntimeException("User Not Found With this Email: "+ email);
         }
         User user=userOpt.get();
         Optional<ForgotPasswordToken> tokenOpt=tokenRepository.findByEmailAndOtp(user.getEmail(),otp);

@@ -35,23 +35,29 @@ public class ForgotPasswordController {
         model.addAttribute("email", email);
         return "reset_password"; // yeh reset_password.html render karega
     }
+    public void validatePassword(String password) {
+        String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\[\\]{};':\"\\\\|,.<>/?]).{6,}$";
+        if(!password.matches(regex)){
+            throw new RuntimeException("Password must be at least 6 characters and include a lowercase, uppercase, number, and special character!");
+        }
+    }
 
 
     @PostMapping("/reset")
-    public String resetPassword(@RequestParam("email") String email,@RequestParam("otp") String otp, @RequestParam("newPassword") String newPassword, Model model){
-        try{
-            boolean success= forgotPasswordService.resetPassword(email,otp,newPassword);
-            if(success){
-                model.addAttribute("message", "Password reset successfully! Please login.");
-                return "login";
-            }
-            else{
-                model.addAttribute("error", "Failed to reset password.");
-                model.addAttribute("email", email);
-                return "reset_password"; // stay on same page with error
-            }
-
-        }catch (Exception e){
+    public String resetPassword(@RequestParam("email") String email,@RequestParam("otp") String otp,
+                                @RequestParam("newPassword") String newPassword,
+                                @RequestParam("confirmPassword") String confirmPassword ,Model model) {
+        validatePassword(newPassword);
+        if(!newPassword.equals(confirmPassword)){
+            model.addAttribute("error","Password donot match!!");
+            model.addAttribute("email",email);
+            return "reset_password";
+        }
+        try {
+            forgotPasswordService.resetPassword(email, otp, newPassword);
+            model.addAttribute("message", "Password reset successfully !! please login");
+            return "login";
+        } catch (Exception e){
             model.addAttribute("error", e.getMessage());
             model.addAttribute("email", email);
             return "reset_password";

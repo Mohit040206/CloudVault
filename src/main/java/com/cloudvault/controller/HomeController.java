@@ -40,10 +40,9 @@ public class HomeController{
     public String showForgotPasswordPage() {
         return "forgot_email";  // templates/forgot_password.html
     }
-//    @GetMapping("/forgot-password/reset-page")
-//    public String resetPasswordPage() {
-//        return "reset_password"; // templates/reset_password.html
-//    }
-
+    @GetMapping("/user/change-password")
+    public String changePassword(){
+        return "change_password";
+    }
 
 }
