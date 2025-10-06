@@ -39,23 +39,21 @@
         main {
             padding: 40px 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: 40px;
-            justify-items: center; /* center cards in grid */
+            justify-items: center;
             flex: 1;
         }
 
         .file-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             padding: 15px;
             width: 100%;
-            height: 220px;
-            max-width: 220px;
-            min-height: 180px;
+            max-width: 240px;
+            min-height: 280px;
             text-align: center;
-            gap:20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -67,19 +65,35 @@
             box-shadow: 0 6px 15px rgba(0,0,0,0.2);
         }
 
+        .preview {
+            width: 100%;
+            height: 160px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .video-preview {
+            width: 100%;
+            height: 160px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .icon-preview {
+            width: 100%;
+            height: 160px;
+            border-radius: 8px;
+            background: #f3f3f3 url('/images/file-icon.png') no-repeat center center;
+            background-size: 60px;
+        }
+
         .file-card h3 {
-            margin: 5px 0;
             font-size: 14px;
             word-break: break-word;
         }
 
-        .file-card p {
-            font-size: 12px;
-            color: #555;
-        }
-
         .file-card button {
-            margin-top: 10px;
             padding: 6px 12px;
             font-size: 13px;
             background: #2d89ef;
@@ -94,33 +108,12 @@
             background: #1b5cb8;
         }
 
-        .no-docs {
-            grid-column: 1 / -1;
-            text-align: center;
-            font-size: 16px;
-            color: #333;
-            padding: 20px;
-        }
-
         footer {
             text-align: center;
             padding: 15px;
             background: #2d89ef;
             color: white;
             margin-top: auto;
-        }
-
-
-        @media (max-width: 600px) {
-            .file-card {
-                max-width: 160px;
-                min-height: 150px;
-            }
-        }
-         h3{
-            align-items:center;
-            justify-content: center;
-            display: flex;
         }
     </style>
 </head>
@@ -132,13 +125,13 @@
         <a href="/upload">Upload File</a>
         <a href="/logout">Logout</a>
     </nav>
-
 </header>
-<h3>Documents</h3>
+
+<h3 style="text-align:center; margin-top:20px;">My Files & Media</h3>
+
 <form action="/document/search" method="get" style="text-align: center; margin-bottom: 20px;">
     <input type="text" name="keyword" placeholder="Search documents..."
-           value=" "
-           style="padding: 8px; margin-top:20px ; width: 250px; border-radius: 6px; border: 1px solid #ccc;">
+           th:value="${keyword}" style="padding: 8px; width: 250px; border-radius: 6px; border: 1px solid #ccc;">
     <button type="submit"
             style="padding: 8px 16px; background: #2d89ef; color: white; border: none; border-radius: 6px; cursor: pointer;">
         Search
@@ -151,13 +144,29 @@
     </div>
 
     <div th:each="doc : ${documents}" class="file-card">
+
+        <!-- Image preview -->
+        <img th:if="${#strings.contains(doc.fileType, 'image')}"
+             th:src="@{/${doc.filePath}}" alt="Image" class="preview"/>
+
+        <!-- Video preview -->
+        <video th:if="${#strings.contains(doc.fileType, 'video')}"
+               class="video-preview" controls>
+            <source th:src="@{/${doc.filePath}}" th:type="${doc.fileType}">
+        </video>
+
+        <!-- Icon for others -->
+        <div th:if="${!#strings.contains(doc.fileType, 'image') and !#strings.contains(doc.fileType, 'video')}"
+             class="icon-preview"></div>
+
         <h3 th:text="${doc.fileName}">File Name</h3>
-        <p th:text="${doc.fileType}">Type</p>
+
         <form th:action="@{'/document/download/' + ${doc.id}}" method="get">
             <button type="submit">Download</button>
         </form>
     </div>
 </main>
+
 <footer>
     <p>&copy; 2025 CloudVault. All rights reserved.</p>
 </footer>

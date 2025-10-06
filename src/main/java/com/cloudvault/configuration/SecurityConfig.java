@@ -2,11 +2,10 @@ package com.cloudvault.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 public class SecurityConfig {
@@ -14,24 +13,41 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // Disable CSRF for file upload
                 .csrf(csrf -> csrf.disable())
+
+                // Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/register","/user/change-password",
+//                        // Allow POST for file upload
+//                        .requestMatchers(HttpMethod.GET, "/documents/upload").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/documents/upload").permitAll()
+
+                        // Allow GET requests for gallery, view, images, static content, etc.
+                        .requestMatchers(
+                                "/user/register",
+                                "/documents/view/**",
+                                "/user/change-password",
                                 "/forgot-password/**",
-                                "/forgotPassword","/document/download/**",
-                                "/document/search","/upload.html","/upload","/document/mydocs",
-                                "mydocs.html",
-                                "/about","/change_password","/document/upload","/user/login","/user/home",
-                                "/index","/register",
-                                "/user/login","/login","/images/**").permitAll()
+                                "/forgotPassword",
+                                "/documents/download/**",
+                                "/documents/search",
+                                "/upload",
+                                "/about",
+                                "/change_password","/documents/upload","/documents/gallery","/user/login",
+                                "/user/home", "/index","/register", "/user/login","/login","/gallery","/images/**"
+                        ).permitAll()
+                        .requestMatchers("/documents/upload").authenticated() // both GET and POST require login
+
+
+                        // All other requests require authentication
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form.disable()); //  disable default Spring login page
+
+                // Disable default Spring login page
+                .formLogin(form -> form.disable());
 
         return http.build();
     }
-
-
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {

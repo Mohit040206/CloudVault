@@ -30,12 +30,13 @@ public class HomeController{
     }
     @GetMapping("/upload")
     public String showUploadPage(HttpSession session) {
-        String email = (String) session.getAttribute("email");
-        if (email == null) {
-            return "redirect:/login.html";
+        // If session has email, show upload page, otherwise redirect to login
+        if (session.getAttribute("email") == null) {
+            return "redirect:/login";
         }
         return "upload"; // shows the form page
     }
+
     @GetMapping("/forgotPassword")
     public String showForgotPasswordPage() {
         return "forgot_email";  // templates/forgot_password.html

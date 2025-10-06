@@ -80,6 +80,7 @@
             text-decoration: none;
             font-weight: bold;
             transition: background 0.3s, transform 0.2s;
+            text-align: center;
         }
 
         .actions a:hover {
@@ -110,8 +111,9 @@
     <div class="dashboard">
         <h2>Welcome, <span th:text="${firstname}"></span> 👋</h2>
         <div class="actions">
+            <!-- Upload, View, Change Password: always visible for the single user -->
             <a href="/upload">📤 Upload File</a>
-            <a href="/document/mydocs">📂 View Files</a>
+            <a href="/documents/gallery">📂 View Files</a>
             <a href="/user/change-password">🔑 Change Password</a>
         </div>
     </div>

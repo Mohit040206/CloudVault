@@ -1,6 +1,6 @@
 package com.cloudvault.repository;
 
-import com.cloudvault.model.Document;
+import com.cloudvault.entity.Document;
 import com.cloudvault.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

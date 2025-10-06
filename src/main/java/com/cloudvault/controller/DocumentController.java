@@ -1,119 +1,111 @@
 package com.cloudvault.controller;
 
-import com.cloudvault.model.Document;
-import com.cloudvault.model.User;
-import com.cloudvault.repository.UserRepository;
+import com.cloudvault.entity.Document;
 import com.cloudvault.service.DocumentService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 
 @Controller
-@RequestMapping("/document")
+@RequestMapping("/documents")
 public class DocumentController {
 
     @Autowired
     private DocumentService documentService;
 
-    @Autowired
-    private UserRepository userRepository;
-
-
-    // ========== Upload ==========
-
+    // Upload file
     @PostMapping("/upload")
-    public String uploadDocument(@RequestParam("file") MultipartFile file,
-                                 HttpSession session) {
+    public String uploadFile(@RequestParam("file") MultipartFile file,
+                             @RequestParam(value = "description", required = false) String description,
+                             HttpSession session,
+                             Model model) {
+        // Make sure user is logged in
         String email = (String) session.getAttribute("email");
         if (email == null) {
-            return "redirect:/login.html";
+            return "redirect:/login";
         }
 
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
-            return "redirect:/login.html";
+        try {
+            documentService.saveFile(file, description, email); // pass email
+            model.addAttribute("success", true);
+        } catch (IOException e) {
+            model.addAttribute("error", true);
+            e.printStackTrace();
         }
-
-        documentService.uploadFile(file, userOpt.get());
-        return "redirect:/upload" + "?success=true"; // after success, reload same page with message
+        return "upload";
     }
 
 
-    // ========== View All Documents of Logged-in User ==========
-    @GetMapping("/mydocs")
-    public String listUserDocuments(Model model, HttpSession session) {
-        String email = (String) session.getAttribute("email");
-        if (email == null) {
-            return "redirect:/login.html";
-        }
 
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
-            return "redirect:/login.html";
-        }
 
-        List<Document> docs = documentService.getDocumentsByUser(userOpt.get());
-        model.addAttribute("documents", docs);
-        return "mydocs.html"; // return mydocs.html with list
+    // Gallery View
+    @GetMapping("/gallery")
+    public String viewGallery(Model model) {
+        List<Document> documents = documentService.getAllFiles();
+        model.addAttribute("documents", documents);
+        return "gallery";
     }
 
-    // ========== Download ==========
-    @GetMapping("/download/{id}")
-    public ResponseEntity<Resource> downloadDocument(@PathVariable Long id, HttpSession session) {
-
+    // Inline View / Download
+    @GetMapping("/view/{id}")
+    public ResponseEntity<?> viewFile(@PathVariable Long id, HttpSession session,
+                                      @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
 
         String email = (String) session.getAttribute("email");
-        if (email == null) {
-            return ResponseEntity.status(401).build();
+        if (email == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        Document doc = documentService.getFileById(id);
+
+        // Check if the logged-in user is the uploader OR shared with this user
+        if (!doc.getUser().getEmail().equals(email) && !documentService.isSharedWithUser(doc, email)) {
+            return ResponseEntity.status(403).body("You are not allowed to access this file");
         }
 
-        Resource file = documentService.downloadDocument(id);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
-                .body(file);
-    }
+        // --- Video / File streaming logic here (seekable if video) ---
+        Path path = Path.of(doc.getFilePath());
+        String fileType = Files.probeContentType(path);
+        long fileSize = Files.size(path);
 
-    // ========== Delete ==========
-    @GetMapping("/delete/{id}")
-    public String deleteDocument(@PathVariable Long id, HttpSession session) {
-        String email = (String) session.getAttribute("email");
-        if (email == null) {
-            return "redirect:/login.html";
+        if (rangeHeader == null) {
+            byte[] fileBytes = Files.readAllBytes(path);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(fileType))
+                    .body(new InputStreamResource(new ByteArrayInputStream(fileBytes)));
         }
 
-        documentService.deleteDocument(id);
-        return "redirect:/document/mydocs";
-    }
-    // ========== Search Documents ==========
-    @GetMapping("/search")
-    public String searchDocuments(@RequestParam("keyword") String keyword,
-                                  HttpSession session,
-                                  Model model) {
-        String email = (String) session.getAttribute("email");
-        if (email == null) {
-            return "redirect:/login.html";
+        long rangeStart = 0;
+        long rangeEnd = fileSize - 1;
+        String[] ranges = rangeHeader.replace("bytes=", "").split("-");
+        rangeStart = Long.parseLong(ranges[0]);
+        if (ranges.length > 1 && !ranges[1].isEmpty()) {
+            rangeEnd = Long.parseLong(ranges[1]);
+        }
+        long contentLength = rangeEnd - rangeStart + 1;
+        byte[] fileBytes = new byte[(int) contentLength];
+        try (var inputStream = Files.newInputStream(path)) {
+            inputStream.skip(rangeStart);
+            inputStream.read(fileBytes, 0, (int) contentLength);
         }
 
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
-            return "redirect:/login.html";
-        }
-
-        // Only search inside logged-in user’s documents
-        List<Document> docs = documentService.searchDocumentsByUser(keyword, userOpt.get());
-        model.addAttribute("documents", docs);
-        model.addAttribute("keyword", keyword);
-
-        return "mydocs"; // reuse same page to display search results
+        return ResponseEntity.status(206)
+                .header("Content-Range", "bytes " + rangeStart + "-" + rangeEnd + "/" + fileSize)
+                .header("Accept-Ranges", "bytes")
+                .contentLength(contentLength)
+                .contentType(MediaType.parseMediaType(fileType))
+                .body(new InputStreamResource(new ByteArrayInputStream(fileBytes)));
     }
 
 }
