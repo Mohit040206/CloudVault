@@ -20,9 +20,14 @@ public class HomeController{
     }
 
     @GetMapping("/login")
-    public String login() {
-        return "login";  // templates/login.html
+    public String login(HttpSession session) {
+        // If session exists, redirect to gallery
+        if (session.getAttribute("email") != null) {
+            return "redirect:/documents/gallery";
+        }
+        return "login"; // else show login page
     }
+
 
     @GetMapping("/register")
     public String register() {

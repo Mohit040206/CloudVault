@@ -5,9 +5,10 @@ import com.cloudvault.service.DocumentService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.support.ResourceRegion;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -26,86 +27,97 @@ public class DocumentController {
     @Autowired
     private DocumentService documentService;
 
-    // Upload file
+    // ✅ Upload file
     @PostMapping("/upload")
     public String uploadFile(@RequestParam("file") MultipartFile file,
                              @RequestParam(value = "description", required = false) String description,
                              HttpSession session,
                              Model model) {
-        // Make sure user is logged in
         String email = (String) session.getAttribute("email");
-        if (email == null) {
-            return "redirect:/login";
-        }
+        if (email == null) return "redirect:/login";
 
         try {
-            documentService.saveFile(file, description, email); // pass email
+            documentService.saveFile(file, description, email);
             model.addAttribute("success", true);
         } catch (IOException e) {
             model.addAttribute("error", true);
             e.printStackTrace();
         }
-        return "upload";
+        return "redirect:/documents/gallery?error=true";
     }
 
-
-
-
-    // Gallery View
+    // ✅ Gallery (shows only logged-in user’s files)
     @GetMapping("/gallery")
-    public String viewGallery(Model model) {
-        List<Document> documents = documentService.getAllFiles();
+    public String viewGallery(Model model, HttpSession session) {
+        String email = (String) session.getAttribute("email");
+        if (email == null) return "redirect:/login";
+
+        List<Document> documents = documentService.getFilesByUser(email);
         model.addAttribute("documents", documents);
         return "gallery";
     }
 
-    // Inline View / Download
+    // ✅ View / Stream file
+
     @GetMapping("/view/{id}")
-    public ResponseEntity<?> viewFile(@PathVariable Long id, HttpSession session,
-                                      @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
+    public ResponseEntity<ResourceRegion> viewFile(@PathVariable Long id,
+                                                   @RequestHeader(value = "Range", required = false) String rangeHeader,
+                                                   HttpSession session) throws IOException {
 
         String email = (String) session.getAttribute("email");
-        if (email == null) return ResponseEntity.status(401).body("Unauthorized");
+        if (email == null) return ResponseEntity.status(401).build();
 
         Document doc = documentService.getFileById(id);
 
-        // Check if the logged-in user is the uploader OR shared with this user
-        if (!doc.getUser().getEmail().equals(email) && !documentService.isSharedWithUser(doc, email)) {
-            return ResponseEntity.status(403).body("You are not allowed to access this file");
+        // Only uploader can access
+        if (!doc.getUser().getEmail().equals(email)) {
+            return ResponseEntity.status(403).build();
         }
 
-        // --- Video / File streaming logic here (seekable if video) ---
         Path path = Path.of(doc.getFilePath());
+        Resource video = new UrlResource(path.toUri());
+        long contentLength = video.contentLength();
+
+        // Default: full region
+        ResourceRegion region = new ResourceRegion(video, 0, contentLength);
+
+        // If Range header exists, parse it
+        if (rangeHeader != null) {
+            List<HttpRange> httpRanges = HttpRange.parseRanges(rangeHeader);
+            HttpRange httpRange = httpRanges.get(0);
+            long start = httpRange.getRangeStart(contentLength);
+            long end = httpRange.getRangeEnd(contentLength);
+            long rangeLength = end - start + 1;
+            region = new ResourceRegion(video, start, rangeLength);
+        }
+
         String fileType = Files.probeContentType(path);
-        long fileSize = Files.size(path);
 
-        if (rangeHeader == null) {
-            byte[] fileBytes = Files.readAllBytes(path);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(fileType))
-                    .body(new InputStreamResource(new ByteArrayInputStream(fileBytes)));
-        }
-
-        long rangeStart = 0;
-        long rangeEnd = fileSize - 1;
-        String[] ranges = rangeHeader.replace("bytes=", "").split("-");
-        rangeStart = Long.parseLong(ranges[0]);
-        if (ranges.length > 1 && !ranges[1].isEmpty()) {
-            rangeEnd = Long.parseLong(ranges[1]);
-        }
-        long contentLength = rangeEnd - rangeStart + 1;
-        byte[] fileBytes = new byte[(int) contentLength];
-        try (var inputStream = Files.newInputStream(path)) {
-            inputStream.skip(rangeStart);
-            inputStream.read(fileBytes, 0, (int) contentLength);
-        }
-
-        return ResponseEntity.status(206)
-                .header("Content-Range", "bytes " + rangeStart + "-" + rangeEnd + "/" + fileSize)
-                .header("Accept-Ranges", "bytes")
-                .contentLength(contentLength)
+        return ResponseEntity.status(rangeHeader != null ? HttpStatus.PARTIAL_CONTENT : HttpStatus.OK)
                 .contentType(MediaType.parseMediaType(fileType))
-                .body(new InputStreamResource(new ByteArrayInputStream(fileBytes)));
+                .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                .body(region);
     }
 
+    // ✅ Delete file
+    @PostMapping("/delete/{id}")
+    public String deleteFile(@PathVariable Long id, HttpSession session, Model model) {
+        String email = (String) session.getAttribute("email");
+        if (email == null) return "redirect:/login";
+
+        try {
+            boolean deleted = documentService.deleteFile(id, email);
+            if (deleted) {
+                model.addAttribute("successMessage", "File deleted successfully!");
+            } else {
+                model.addAttribute("errorMessage", "You cannot delete this file!");
+            }
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Error deleting file: " + e.getMessage());
+        }
+
+        List<Document> documents = documentService.getFilesByUser(email);
+        model.addAttribute("documents", documents);
+        return "redirect:/documents/gallery?error=true";
+    }
 }

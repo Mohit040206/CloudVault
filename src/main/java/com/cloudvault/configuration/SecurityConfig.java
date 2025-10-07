@@ -31,6 +31,7 @@ public class SecurityConfig {
                                 "/forgotPassword",
                                 "/documents/download/**",
                                 "/documents/search",
+                                "/documents/delete/**",
                                 "/upload",
                                 "/about",
                                 "/change_password","/documents/upload","/documents/gallery","/user/login",

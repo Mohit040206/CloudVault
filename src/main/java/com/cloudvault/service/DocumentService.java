@@ -1,7 +1,6 @@
 package com.cloudvault.service;
 
 import com.cloudvault.entity.Document;
-
 import com.cloudvault.model.User;
 import com.cloudvault.repository.DocumentRepository;
 import com.cloudvault.repository.UserRepository;
@@ -21,7 +20,7 @@ public class DocumentService {
     private DocumentRepository documentRepository;
 
     @Autowired
-    private UserRepository userRepository; // NEW
+    private UserRepository userRepository;
 
     private final String UPLOAD_DIR = "uploads/";
 
@@ -53,29 +52,42 @@ public class DocumentService {
         document.setFileSize(file.getSize());
         document.setUploadedAt(LocalDateTime.now());
         document.setExpiryAt(null);
-        document.setUser(user); // set the logged-in user
+        document.setUser(user);
+
         documentRepository.save(document);
     }
 
-    public List<Document> getAllFiles() {
-        return documentRepository.findAll();
+    // ✅ Fetch only the logged-in user's files
+    public List<Document> getFilesByUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return documentRepository.findByUser(user);
     }
 
+    // ✅ Fetch file by ID
     public Document getFileById(Long id) {
         return documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("File not found with ID: " + id));
     }
 
+    // ✅ Download file (for viewing)
     public byte[] downloadFile(Long id) throws IOException {
         Document document = getFileById(id);
         Path path = Paths.get(document.getFilePath());
         return Files.readAllBytes(path);
     }
-    public boolean isSharedWithUser(Document doc, String email) {
-        // Check in your sharing table or password mapping
-        // Return true if this user has access
-        return doc.getSharedUsers().stream()
-                .anyMatch(user -> user.getEmail().equals(email));
-    }
 
+    // ✅ Delete file (only if it belongs to the logged-in user)
+    public boolean deleteFile(Long id, String email) throws IOException {
+        Document document = getFileById(id);
+
+        if (!document.getUser().getEmail().equals(email)) {
+            return false; // Prevent deleting others' files
+        }
+
+        Path path = Paths.get(document.getFilePath());
+        Files.deleteIfExists(path);
+        documentRepository.delete(document);
+        return true;
+    }
 }
