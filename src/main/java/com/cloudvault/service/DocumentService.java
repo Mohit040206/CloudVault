@@ -57,27 +57,27 @@ public class DocumentService {
         documentRepository.save(document);
     }
 
-    // ✅ Fetch only the logged-in user's files
+    //  Fetch only the logged-in user's files
     public List<Document> getFilesByUser(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return documentRepository.findByUser(user);
     }
 
-    // ✅ Fetch file by ID
+    //  Fetch file by ID
     public Document getFileById(Long id) {
         return documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("File not found with ID: " + id));
     }
 
-    // ✅ Download file (for viewing)
+    //  Download file (for viewing)
     public byte[] downloadFile(Long id) throws IOException {
         Document document = getFileById(id);
         Path path = Paths.get(document.getFilePath());
         return Files.readAllBytes(path);
     }
 
-    // ✅ Delete file (only if it belongs to the logged-in user)
+    //  Delete file (only if it belongs to the logged-in user)
     public boolean deleteFile(Long id, String email) throws IOException {
         Document document = getFileById(id);
 

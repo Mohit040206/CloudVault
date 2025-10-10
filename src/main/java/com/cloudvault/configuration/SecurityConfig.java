@@ -24,7 +24,7 @@ public class SecurityConfig {
 
                         // Allow GET requests for gallery, view, images, static content, etc.
                         .requestMatchers(
-                                "/user/register",
+                                "/**","/user/register",
                                 "/documents/view/**",
                                 "/user/change-password",
                                 "/forgot-password/**",
@@ -35,9 +35,9 @@ public class SecurityConfig {
                                 "/upload",
                                 "/about",
                                 "/change_password","/documents/upload","/documents/gallery","/user/login",
-                                "/user/home", "/index","/register", "/user/login","/login","/gallery","/images/**"
+                                "/user/home", "/index","/register", "/user/login","/login","/gallery","/images/**", "/css/**", "/js/**"
                         ).permitAll()
-                        .requestMatchers("/documents/upload").authenticated() // both GET and POST require login
+//                        .requestMatchers("/documents/upload").permitAll() // both GET and POST require login
 
 
                         // All other requests require authentication

@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About - CloudVault</title>
   <style>
     body {
@@ -26,16 +27,20 @@
         margin: 0;
     }
 
-    nav a {
-        color: white;
-        margin-left: 20px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: color 0.3s;
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
     }
-
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
     nav a:hover {
-        color: #ffe082;
+      color: #ffe082;
     }
 
     main {
@@ -86,6 +91,31 @@
         margin-top: 40px;
     }
 
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    nav a {
+        margin: 10px 0;
+        display: block;
+    }
+    main {
+        padding: 20px;
+        grid-template-columns: 1fr;
+    }
+    .card {
+        max-width: 100%;
+        margin: auto;
+    }
+    img, video, iframe {
+        max-height: 150px;
+    }
+    button {
+        width: 100%;
+        margin-top: 8px;
+    }
+}
 
   </style>
 </head>
