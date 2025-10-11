@@ -70,14 +70,14 @@ public class DocumentService {
                 .orElseThrow(() -> new RuntimeException("File not found with ID: " + id));
     }
 
-    //  Download file (for viewing)
+    //  Download file
     public byte[] downloadFile(Long id) throws IOException {
         Document document = getFileById(id);
         Path path = Paths.get(document.getFilePath());
         return Files.readAllBytes(path);
     }
 
-    //  Delete file (only if it belongs to the logged-in user)
+    //  Delete file
     public boolean deleteFile(Long id, String email) throws IOException {
         Document document = getFileById(id);
 
@@ -90,4 +90,13 @@ public class DocumentService {
         documentRepository.delete(document);
         return true;
     }
+    public List<Document> searchDocumentsByUser(String keyword, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Perform case-insensitive search by file name or description
+        return documentRepository.findByUserAndFileNameContainingIgnoreCase(
+                user, keyword);
+    }
+
 }

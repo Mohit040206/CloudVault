@@ -11,7 +11,8 @@ import java.util.List;
 public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     List<Document> findByUser(User user);
-    List<Document> findByUserAndFileNameContainingIgnoreCase(User user, String fileName);
+    List<Document> findByUserAndFileNameContainingIgnoreCase(
+            User user, String name);
 
 
 }

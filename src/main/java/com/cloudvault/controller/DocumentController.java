@@ -107,7 +107,7 @@ public class DocumentController {
                 .body(resource);
     }
 
-    //  Delete file (fixed redirect)
+    //  Delete file
     @PostMapping("/delete/{id}")
     public String deleteFile(@PathVariable Long id, HttpSession session) {
         String email = (String) session.getAttribute("email");
@@ -123,4 +123,18 @@ public class DocumentController {
             return "redirect:/documents/gallery?error=true";
         }
     }
+    @GetMapping("/search")
+    public String searchDocuments(@RequestParam("keyword") String keyword,
+                                  HttpSession session,
+                                  Model model) {
+        String email = (String) session.getAttribute("email");
+        if (email == null) return "redirect:/login";
+
+        List<Document> docs = documentService.searchDocumentsByUser(keyword, email);
+        model.addAttribute("documents", docs);
+        model.addAttribute("keyword", keyword);
+
+        return "gallery"; // reuse same page for search results
+    }
+
 }
