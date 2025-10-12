@@ -59,7 +59,7 @@ public class DocumentService {
         document.setUploadedAt(LocalDateTime.now());
         document.setExpiryAt(null);
         document.setUser(user);
-       
+
 
         documentRepository.save(document);
     }
