@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class DocumentService {
@@ -29,55 +30,57 @@ public class DocumentService {
             throw new IOException("Empty file not allowed");
         }
 
-        // Create upload directory if not exists
+        // Create upload directory if it doesn't exist
         Path uploadPath = Paths.get(UPLOAD_DIR);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
 
-        String fileName = file.getOriginalFilename();
-        String filePath = UPLOAD_DIR + System.currentTimeMillis() + "_" + fileName;
+        String originalFileName = file.getOriginalFilename();
+        String fileType = file.getContentType();
 
-        // Save file to disk
-        Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
+        // Generate unique stored filename
+        String storedFileName = UUID.randomUUID() + "_" + originalFileName;
+        Path storedFilePath = Paths.get(UPLOAD_DIR, storedFileName);
 
-        // Fetch the user from email
+        // Save file as-is (no HEIC conversion)
+        Files.copy(file.getInputStream(), storedFilePath, StandardCopyOption.REPLACE_EXISTING);
+
+        // Fetch user by email
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Save document record
         Document document = new Document();
-        document.setFileName(fileName);
-        document.setFilePath(filePath);
-        document.setFileType(Files.probeContentType(Paths.get(filePath)));
+        document.setFileName(storedFileName);
+        document.setFilePath(storedFilePath.toString());
+        document.setFileType(fileType);
         document.setFileSize(file.getSize());
         document.setUploadedAt(LocalDateTime.now());
         document.setExpiryAt(null);
         document.setUser(user);
+       
 
         documentRepository.save(document);
     }
 
-    //  Fetch only the logged-in user's files
     public List<Document> getFilesByUser(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return documentRepository.findByUser(user);
     }
 
-    //  Fetch file by ID
     public Document getFileById(Long id) {
         return documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("File not found with ID: " + id));
     }
 
-    //  Download file
     public byte[] downloadFile(Long id) throws IOException {
         Document document = getFileById(id);
         Path path = Paths.get(document.getFilePath());
         return Files.readAllBytes(path);
     }
 
-    //  Delete file
     public boolean deleteFile(Long id, String email) throws IOException {
         Document document = getFileById(id);
 
@@ -90,13 +93,10 @@ public class DocumentService {
         documentRepository.delete(document);
         return true;
     }
+
     public List<Document> searchDocumentsByUser(String keyword, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Perform case-insensitive search by file name or description
-        return documentRepository.findByUserAndFileNameContainingIgnoreCase(
-                user, keyword);
+        return documentRepository.findByUserAndFileNameContainingIgnoreCase(user, keyword);
     }
-
 }

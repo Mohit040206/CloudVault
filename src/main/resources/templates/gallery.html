@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Gallery - CloudVault</title>
+
     <style>
         body {
             margin: 0;
@@ -19,21 +19,21 @@
             justify-content: space-between;
             align-items: center;
         }
-          nav {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-    nav a {
-      color: white;
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.3s;
-    }
-    nav a:hover {
-      color: #ffe082;
-    }
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        nav a:hover {
+            color: #ffe082;
+        }
         main {
             padding: 40px;
             display: grid;
@@ -65,7 +65,6 @@
         button:hover {
             background: #1b5cb8;
         }
-        /* Messages styling */
         .message {
             padding: 20px;
             font-weight: 600;
@@ -73,31 +72,30 @@
         .success { color: green; }
         .error { color: red; }
         @media (max-width: 768px) {
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    nav a {
-        margin: 10px 0;
-        display: block;
-    }
-    main {
-        padding: 20px;
-        grid-template-columns: 1fr;
-    }
-    .card {
-        max-width: 100%;
-        margin: auto;
-    }
-    img, video, iframe {
-        max-height: 150px;
-    }
-    button {
-        width: 100%;
-        margin-top: 8px;
-    }
-}
-
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            nav a {
+                margin: 10px 0;
+                display: block;
+            }
+            main {
+                padding: 20px;
+                grid-template-columns: 1fr;
+            }
+            .card {
+                max-width: 100%;
+                margin: auto;
+            }
+            img, video, iframe {
+                max-height: 150px;
+            }
+            button {
+                width: 100%;
+                margin-top: 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -110,20 +108,14 @@
     </nav>
 </header>
 
-<!-- Success / Error Messages -->
+<!-- ✅ Success / Error Messages -->
 <div class="message">
-    <div th:if="${param.uploaded}" class="success">
-        File uploaded successfully!
-    </div>
-    <div th:if="${param.deleted}" class="success">
-        File deleted successfully!
-    </div>
-    <div th:if="${param.error}" class="error">
-        Operation failed. Please try again!
-    </div>
+    <div th:if="${param.uploaded}" class="success">File uploaded successfully!</div>
+    <div th:if="${param.deleted}" class="success">File deleted successfully!</div>
+    <div th:if="${param.error}" class="error">Operation failed. Please try again!</div>
 </div>
 
-<!-- 🔍 Search Form -->
+<!-- ✅ Search -->
 <div style="text-align:center; margin: 20px;">
     <form th:action="@{/documents/search}" method="get" style="display:inline-flex; gap:10px; align-items:center;">
         <input type="text" name="keyword" th:value="${keyword}" placeholder="Search files..."
@@ -135,45 +127,35 @@
     </form>
 </div>
 
-
+<!-- ✅ Gallery -->
 <main>
-
-
     <div th:each="doc : ${documents}" class="card">
 
-        <!-- Image -->
-        <img th:if="${#strings.contains(doc.fileType, 'image')}"
+        <!-- 🖼 Image -->
+        <img th:if="${doc.fileType != null and #strings.contains(doc.fileType, 'image')}"
              th:src="@{'/documents/view/' + ${doc.id}}" alt="Image">
 
-        <!-- Video -->
-        <video th:if="${#strings.contains(doc.fileType, 'video')}" controls>
+        <!-- 🎥 Video -->
+        <video th:if="${doc.fileType != null and #strings.contains(doc.fileType, 'video')}" controls>
             <source th:src="@{'/documents/view/' + ${doc.id}}" th:type="${doc.fileType}">
         </video>
 
-        <!-- PDF -->
-        <iframe th:if="${#strings.contains(doc.fileType, 'pdf')}"
+        <!-- 📄 PDF -->
+        <iframe th:if="${doc.fileType != null and #strings.contains(doc.fileType, 'pdf')}"
                 th:src="@{'/documents/view/' + ${doc.id}}" width="100%" height="200px"></iframe>
 
-        <!-- Other file types -->
-        <div th:if="${!#strings.contains(doc.fileType, 'image')
-                      and !#strings.contains(doc.fileType, 'video')
-                      and !#strings.contains(doc.fileType, 'pdf')}">
+        <!-- 🗂 Other file types -->
+        <div th:if="${doc.fileType == null
+                    or (!#strings.contains(doc.fileType, 'image')
+                        and !#strings.contains(doc.fileType, 'video')
+                        and !#strings.contains(doc.fileType, 'pdf'))}">
             <p th:text="${doc.fileName}"></p>
         </div>
 
-        <!-- Action Buttons -->
+        <!-- ⚙ Actions -->
         <div>
-            <!-- View Button -->
-            <a th:href="@{'/documents/view/' + ${doc.id}}" >
-                <button type="button">👁 View</button>
-            </a>
-
-            <!-- Download Button -->
-            <a th:href="@{'/documents/download/' + ${doc.id}}">
-                <button type="button">⬇ Download</button>
-            </a>
-
-            <!-- Delete Button -->
+            <a th:href="@{'/documents/view/' + ${doc.id}}"><button type="button">👁 View</button></a>
+            <a th:href="@{'/documents/download/' + ${doc.id}}"><button type="button">⬇ Download</button></a>
             <form th:action="@{/documents/delete/{id}(id=${doc.id})}" method="post" style="display:inline;">
                 <button type="submit" onclick="return confirm('Delete this file?')">🗑 Delete</button>
             </form>

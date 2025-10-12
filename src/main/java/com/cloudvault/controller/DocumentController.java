@@ -26,21 +26,27 @@ public class DocumentController {
     private DocumentService documentService;
 
     //  Upload file (fixed success redirect)
+    //  Upload multiple files at once
     @PostMapping("/upload")
-    public String uploadFile(@RequestParam("file") MultipartFile file,
-                             @RequestParam(value = "description", required = false) String description,
-                             HttpSession session) {
+    public String uploadMultipleFiles(@RequestParam("file") MultipartFile[] files,
+                                      @RequestParam(value = "description", required = false) String description,
+                                      HttpSession session) {
         String email = (String) session.getAttribute("email");
         if (email == null) return "redirect:/login";
 
         try {
-            documentService.saveFile(file, description, email);
-            return "redirect:/documents/gallery?uploaded=true";  // ✅ success
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    documentService.saveFile(file, description, email);
+                }
+            }
+            return "redirect:/documents/gallery?uploaded=true";
         } catch (IOException e) {
             e.printStackTrace();
-            return "redirect:/documents/gallery?error=true";      // ❌ failure
+            return "redirect:/documents/gallery?error=true";
         }
     }
+
 
     //  Gallery
     @GetMapping("/gallery")
@@ -53,7 +59,7 @@ public class DocumentController {
         return "gallery";
     }
 
-    //View file
+    // View file safely (supports HEIC and other unknown types)
     @GetMapping("/view/{id}")
     public ResponseEntity<ResourceRegion> viewFile(@PathVariable Long id,
                                                    @RequestHeader(value = "Range", required = false) String rangeHeader,
@@ -68,24 +74,39 @@ public class DocumentController {
         }
 
         Path path = Path.of(doc.getFilePath());
-        Resource video = new UrlResource(path.toUri());
-        long contentLength = video.contentLength();
-        ResourceRegion region = new ResourceRegion(video, 0, contentLength);
+        Resource resource = new UrlResource(path.toUri());
+        long contentLength = resource.contentLength();
+        ResourceRegion region = new ResourceRegion(resource, 0, contentLength);
 
+        // Handle HTTP Range requests
         if (rangeHeader != null) {
             List<HttpRange> httpRanges = HttpRange.parseRanges(rangeHeader);
             HttpRange httpRange = httpRanges.get(0);
             long start = httpRange.getRangeStart(contentLength);
             long end = httpRange.getRangeEnd(contentLength);
-            region = new ResourceRegion(video, start, end - start + 1);
+            region = new ResourceRegion(resource, start, end - start + 1);
         }
 
+        // Detect MIME type safely
         String fileType = Files.probeContentType(path);
+        if (fileType == null) {
+            // Fallback based on extension
+            String ext = doc.getFileName().substring(doc.getFileName().lastIndexOf('.') + 1).toLowerCase();
+            switch (ext) {
+                case "heic" -> fileType = "image/heic";
+                case "jpg", "jpeg" -> fileType = "image/jpeg";
+                case "png" -> fileType = "image/png";
+                case "gif" -> fileType = "image/gif";
+                default -> fileType = "application/octet-stream"; // generic fallback
+            }
+        }
+
         return ResponseEntity.status(rangeHeader != null ? HttpStatus.PARTIAL_CONTENT : HttpStatus.OK)
                 .contentType(MediaType.parseMediaType(fileType))
                 .header(HttpHeaders.ACCEPT_RANGES, "bytes")
                 .body(region);
     }
+
 
     //  Download file
     @GetMapping("/download/{id}")
