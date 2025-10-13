@@ -1,5 +1,6 @@
 # Step 1: Use Maven to build the app
-FROM maven:3.9.2-jdk-21 AS build
+FROM maven:3.9.2-eclipse-temurin-21-jdk AS build
+
 
 # Set working directory
 WORKDIR /app
